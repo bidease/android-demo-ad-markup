@@ -1,12 +1,23 @@
 # Gradle files
 .gradle/
 build/
+**/build/
+.gradle
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
 
 # Local configuration file (sdk path, etc)
 local.properties
+gradle.properties
 
 # Log/OS Files
 *.log
+*.log.*
+*.swp
+*.swo
+*~
+.DS_Store
 
 # Android Studio generated files and folders
 captures/
@@ -14,21 +25,72 @@ captures/
 .cxx/
 *.aab
 *.apk
+*.ap_
+*.apk.ids
 output-metadata.json
+*.dex
+*.class
 
-# IntelliJ
+# IntelliJ / Android Studio
 *.iml
 .idea/
+.idea_modules/
+*.ipr
+*.iws
 misc.xml
 deploymentTargetDropDown.xml
 render.experimental.xml
+workspace.xml
+tasks.xml
+gradle.xml
+*.iml
+local.properties
 
 # Keystore files
 *.jks
 *.keystore
+*.p12
+*.pfx
 
 # Google Services (e.g. APIs or Firebase)
 google-services.json
+google-services.xml
 
 # Android Profiling
 *.hprof
+*.prof
+
+# Signing files
+signing.properties
+keystore.properties
+
+# Personal information
+*.key
+*.pem
+*.cert
+*.crt
+*.gpg
+secring.gpg
+*.secret
+
+# Build artifacts
+*.aar
+*.jar
+!gradle-wrapper.jar
+proguard/
+proguard-rules.pro.bak
+
+# Kotlin
+*.kotlin_module
+*.kt.swp
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.cache
+.cache/
+
+# OS files
+Thumbs.db
+.DS_Store

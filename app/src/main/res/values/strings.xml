@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">AndroidDemoAdMarkup</string>
+    
+    <!-- UI Labels -->
+    <string name="test_banner">Test Banner</string>
+    <string name="test_interstitial">Test Interstitial</string>
+    <string name="test_rewarded">Test Rewarded</string>
+    <string name="test_mraid">Test MRAID</string>
+    <string name="show_banner">Show Banner</string>
+    <string name="show_interstitial">Show Interstitial</string>
+    <string name="show_rewarded">Show Rewarded</string>
+    <string name="show_mraid">Show MRAID</string>
+    <string name="clear">Clear</string>
+</resources>
