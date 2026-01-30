@@ -24,7 +24,6 @@ captures/
 .externalNativeBuild/
 .cxx/
 *.aab
-*.apk
 *.ap_
 *.apk.ids
 output-metadata.json
