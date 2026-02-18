@@ -23,6 +23,8 @@ fun MraidSection(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val logger = rememberAdLifecycleLogger(context)
+    val events by logger.collectEventsAsState()
     
     Text(
         text = "MRAID Banner Ad",
@@ -71,7 +73,8 @@ fun MraidSection(
                             onDisplayed = { onStatusChange("Displayed") },
                             onFailed = { error -> onStatusChange("Failed: $error") },
                             onClicked = { onStatusChange("Clicked") },
-                            onClosed = { onStatusChange("Closed") }
+                            onClosed = { onStatusChange("Closed") },
+                            logger = logger
                         )
                     } catch (e: Exception) {
                         onStatusChange("Error: ${e.message}")
@@ -89,6 +92,7 @@ fun MraidSection(
                 onStatusChange("")
                 container?.removeAllViews()
                 onContainerChange(null)
+                logger.clear()
             },
             modifier = Modifier.weight(1f)
         ) {
@@ -102,6 +106,34 @@ fun MraidSection(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.primary
         )
+    }
+    
+    if (events.isNotEmpty()) {
+        Spacer(modifier = Modifier.height(8.dp))
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(12.dp)
+            ) {
+                Text(
+                    text = "Lifecycle Events:",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                events.forEach { event ->
+                    Text(
+                        text = event,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(vertical = 2.dp)
+                    )
+                }
+            }
+        }
     }
     
     container?.let { container ->

@@ -23,6 +23,8 @@ fun RewardedSection(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val logger = rememberAdLifecycleLogger(context)
+    val events by logger.collectEventsAsState()
     
     Text(
         text = "Rewarded Ad",
@@ -63,7 +65,8 @@ fun RewardedSection(
                             onFailed = { error -> onStatusChange("Failed: $error") },
                             onClicked = { onStatusChange("Clicked") },
                             onClosed = { onStatusChange("Closed") },
-                            onRewarded = { onStatusChange("Rewarded!") }
+                            onRewarded = { onStatusChange("Rewarded!") },
+                            logger = logger
                         )
                         onControllerChange(newController)
                     } catch (e: Exception) {
@@ -82,6 +85,7 @@ fun RewardedSection(
                 onStatusChange("")
                 controller?.destroy()
                 onControllerChange(null)
+                logger.clear()
             },
             modifier = Modifier.weight(1f)
         ) {
@@ -95,5 +99,33 @@ fun RewardedSection(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.primary
         )
+    }
+    
+    if (events.isNotEmpty()) {
+        Spacer(modifier = Modifier.height(8.dp))
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(12.dp)
+            ) {
+                Text(
+                    text = "Lifecycle Events:",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                events.forEach { event ->
+                    Text(
+                        text = event,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(vertical = 2.dp)
+                    )
+                }
+            }
+        }
     }
 }
