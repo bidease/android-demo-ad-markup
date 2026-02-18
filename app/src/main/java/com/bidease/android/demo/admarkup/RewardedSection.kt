@@ -56,7 +56,7 @@ fun RewardedSection(
             onClick = {
                 scope.launch {
                     try {
-                        val markupToUse = if (markup.isBlank()) testMarkup else markup
+                        val markupToUse = markup.ifBlank { testMarkup }
                         onStatusChange("Loading...")
                         val newController = renderRewarded(
                             context = context,

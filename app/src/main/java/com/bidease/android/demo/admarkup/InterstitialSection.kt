@@ -55,7 +55,7 @@ fun InterstitialSection(
             onClick = {
                 scope.launch {
                     try {
-                        val markupToUse = if (markup.isBlank()) testMarkup else markup
+                        val markupToUse = markup.ifBlank { testMarkup }
                         onStatusChange("Loading...")
                         val newController = renderInterstitial(
                             context = context,

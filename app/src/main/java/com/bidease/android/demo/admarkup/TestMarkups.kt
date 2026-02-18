@@ -1,6 +1,7 @@
 package com.bidease.android.demo.admarkup
 
-fun getTestBannerMarkup(): String = """<div style="width:320px;height:50px;background:linear-gradient(90deg, #667eea, #764ba2);color:white;text-align:center;line-height:50px;font-family:Arial,sans-serif;border-radius:5px;">TEST BANNER</div>""".trimIndent()
+fun getTestBannerMarkup(): String = """<div style="width:320px;height:50px;background:linear-gradient(90deg, #667eea, #764ba2);color:white;text-align:center;line-height:50px;font-family:Arial,sans-serif;border-radius:5px;">TEST BANNER</div>"""
+    .trimIndent()
 
 fun getTestInterstitialMarkup(): String = """<div style="width:320px;height:480px;background:linear-gradient(45deg, #ff6b6b, #4ecdc4);color:white;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;font-family:Arial,sans-serif;">
         <h2>TEST INTERSTITIAL</h2>
