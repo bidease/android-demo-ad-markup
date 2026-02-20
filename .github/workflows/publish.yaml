@@ -9,7 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Cold-cache first run: mergeDebugJavaResource alone can take 25+ min with default heap.
+    # With gradle.properties giving the daemon 4 GB, expect 15-30 min cold / <5 min warm.
+    timeout-minutes: 90
 
     steps:
       - name: Checkout
@@ -20,20 +22,19 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          # Caches ~/.gradle/caches and ~/.gradle/wrapper between runs.
+          # After the first successful build the Gradle dependency cache is populated
+          # and tasks like mergeDebugJavaResource become UP-TO-DATE (near-instant).
           cache: gradle
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
       - name: Build debug APK
-        # --no-daemon: runs Gradle in the client process — if OOM occurs the job fails
-        #   immediately instead of hanging until the 6h runner timeout.
-        # GRADLE_OPTS -Xmx4g: gives the build 4 GB heap (ubuntu-latest has 16 GB).
-        #   Default Gradle heap (~512m–1g) is too small for AGP 9 + Kotlin 2 + Compose + 4 adapters.
-        # No 'clean': a fresh CI checkout has no stale outputs; clean only wastes ~30-60s.
-        run: ./gradlew assembleDebug --no-daemon
-        env:
-          GRADLE_OPTS: "-Xmx4g -XX:MaxMetaspaceSize=512m"
+        # JVM heap for the build daemon is set in gradle.properties (org.gradle.jvmargs).
+        # GRADLE_OPTS only reaches the wrapper/client process, NOT the daemon that actually
+        # runs tasks — that was the root cause of the previous timeouts on mergeDebugJavaResource.
+        run: ./gradlew assembleDebug
 
       - name: Upload APK as workflow artifact
         uses: actions/upload-artifact@v4
