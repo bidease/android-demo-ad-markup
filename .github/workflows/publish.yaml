@@ -30,6 +30,31 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
+      - name: Configure Gradle for CI
+        # gradle.properties is listed in .gitignore (intentionally — it holds local sdk paths
+        # on developer machines). Writing to ~/.gradle/gradle.properties instead reaches the
+        # build daemon without touching the repo or fighting .gitignore.
+        # Gradle merges ~/.gradle/gradle.properties with the project-level file at startup.
+        #
+        # Why these values:
+        #   jvmargs -Xmx5g : D8 dex workers run inside the daemon (NoIsolationWorkerFactory)
+        #                    and share its heap. The Bidease SDK + 3 adapters produce a large
+        #                    dex set. 4 GB OOM'd; 5 GB leaves ~2 GB headroom on the 7 GB runner.
+        #   parallel=false  : Single-module project — no cross-module benefit. Disabling it
+        #                    prevents AGP from scheduling dex tasks concurrently and spiking heap.
+        #   workers.max=2   : Caps in-process worker threads at the runner's vCPU count.
+        #   caching=true    : After the first cold build, task outputs are reused and most
+        #                    tasks become UP-TO-DATE (near-instant subsequent runs).
+        run: |
+          mkdir -p ~/.gradle
+          cat > ~/.gradle/gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx5g -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError
+          org.gradle.daemon=false
+          org.gradle.parallel=false
+          org.gradle.workers.max=2
+          org.gradle.caching=true
+          EOF
+
       - name: Build debug APK
         # JVM heap for the build daemon is set in gradle.properties (org.gradle.jvmargs).
         # GRADLE_OPTS only reaches the wrapper/client process, NOT the daemon that actually
