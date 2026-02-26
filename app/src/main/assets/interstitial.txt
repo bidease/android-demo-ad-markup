@@ -1,0 +1,5 @@
+<div style="width:320px;height:480px;background:linear-gradient(45deg, #ff6b6b, #4ecdc4);color:white;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;font-family:Arial,sans-serif;">
+    <h2>TEST INTERSTITIAL</h2>
+    <p>Full screen ad</p>
+    <button style="background:white;color:#333;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;">CLICK ME</button>
+</div>

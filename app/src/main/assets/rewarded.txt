@@ -1,0 +1,5 @@
+<div style="width:320px;height:480px;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;font-family:Arial,sans-serif;">
+    <h2>REWARDED AD</h2>
+    <p>Watch to earn reward</p>
+    <button style="background:white;color:#333;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;margin-top:20px;">CLICK FOR REWARD</button>
+</div>

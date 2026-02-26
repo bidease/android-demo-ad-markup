@@ -7,20 +7,30 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.bidease.mobile.interstitialads.InterstitialController
 
 @Composable
 fun AdMarkupDemoScreen() {
-    val testBannerMarkup = getTestBannerMarkup()
-    val testInterstitialMarkup = getTestInterstitialMarkup()
-    val testRewardedMarkup = getTestRewardedMarkup()
-    val testMraidMarkup = getTestMraidMarkup()
+    val context = LocalContext.current
+    val testBannerMarkup = remember(context) {
+        requireNotNull(loadTestMarkupFromAssets(context, "banner")) { "Missing asset: banner.txt" }
+    }
+    val testInterstitialMarkup = remember(context) {
+        requireNotNull(loadTestMarkupFromAssets(context, "interstitial")) { "Missing asset: interstitial.txt" }
+    }
+    val testRewardedMarkup = remember(context) {
+        requireNotNull(loadTestMarkupFromAssets(context, "rewarded")) { "Missing asset: rewarded.txt" }
+    }
+    val testMraidMarkup = remember(context) {
+        requireNotNull(loadTestMarkupFromAssets(context, "mraid")) { "Missing asset: mraid.txt" }
+    }
     
-    var bannerMarkup by remember { mutableStateOf("") }
-    var interstitialMarkup by remember { mutableStateOf("") }
-    var rewardedMarkup by remember { mutableStateOf("") }
-    var mraidMarkup by remember { mutableStateOf("") }
+    val bannerHolder = remember { MarkupHolder() }
+    val interstitialHolder = remember { MarkupHolder() }
+    val rewardedHolder = remember { MarkupHolder() }
+    val mraidHolder = remember { MarkupHolder() }
     
     var bannerStatus by remember { mutableStateOf("") }
     var interstitialStatus by remember { mutableStateOf("") }
@@ -58,8 +68,7 @@ fun AdMarkupDemoScreen() {
         Spacer(modifier = Modifier.height(20.dp))
         
         BannerSection(
-            markup = bannerMarkup,
-            onMarkupChange = { bannerMarkup = it },
+            holder = bannerHolder,
             status = bannerStatus,
             onStatusChange = { bannerStatus = it },
             container = bannerContainer,
@@ -71,8 +80,7 @@ fun AdMarkupDemoScreen() {
         Spacer(modifier = Modifier.height(20.dp))
         
         InterstitialSection(
-            markup = interstitialMarkup,
-            onMarkupChange = { interstitialMarkup = it },
+            holder = interstitialHolder,
             status = interstitialStatus,
             onStatusChange = { interstitialStatus = it },
             controller = interstitialController,
@@ -84,8 +92,7 @@ fun AdMarkupDemoScreen() {
         Spacer(modifier = Modifier.height(20.dp))
         
         RewardedSection(
-            markup = rewardedMarkup,
-            onMarkupChange = { rewardedMarkup = it },
+            holder = rewardedHolder,
             status = rewardedStatus,
             onStatusChange = { rewardedStatus = it },
             controller = rewardedController,
@@ -97,8 +104,7 @@ fun AdMarkupDemoScreen() {
         Spacer(modifier = Modifier.height(20.dp))
         
         MraidSection(
-            markup = mraidMarkup,
-            onMarkupChange = { mraidMarkup = it },
+            holder = mraidHolder,
             status = mraidStatus,
             onStatusChange = { mraidStatus = it },
             container = mraidContainer,
