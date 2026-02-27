@@ -1,5 +1,6 @@
 package com.bidease.android.demo.admarkup
 
+import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -13,8 +14,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun MraidSection(
-    markup: String,
-    onMarkupChange: (String) -> Unit,
+    holder: MarkupHolder,
     status: String,
     onStatusChange: (String) -> Unit,
     container: FrameLayout?,
@@ -25,24 +25,26 @@ fun MraidSection(
     val scope = rememberCoroutineScope()
     val logger = rememberAdLifecycleLogger(context)
     val events by logger.collectEventsAsState()
+    val editTextRef = remember { mutableStateOf<EditText?>(null) }
     
     Text(
         text = "MRAID Banner Ad",
         style = MaterialTheme.typography.titleLarge
     )
     
-    OutlinedTextField(
-        value = markup,
-        onValueChange = onMarkupChange,
+    MarkupEditField(
+        holder = holder,
+        editTextRef = editTextRef,
         modifier = Modifier.fillMaxWidth(),
-        label = { Text("MRAID Markup") },
-        placeholder = { Text("Paste MRAID HTML markup here (with mraid.js)") },
-        minLines = 5,
-        maxLines = 8
+        label = "MRAID Markup",
+        minLines = 5
     )
     
     Button(
-        onClick = { onMarkupChange(testMarkup) },
+        onClick = {
+            holder.text = testMarkup
+            editTextRef.value?.setText(testMarkup)
+        },
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(stringResource(R.string.test_mraid))
@@ -56,7 +58,7 @@ fun MraidSection(
             onClick = {
                 scope.launch {
                     try {
-                        val markupToUse = markup.ifBlank { testMarkup }
+                        val markupToUse = holder.text.ifBlank { testMarkup }
                         onStatusChange("Loading...")
                         val newContainer = FrameLayout(context).apply {
                             layoutParams = FrameLayout.LayoutParams(
@@ -88,7 +90,8 @@ fun MraidSection(
         
         Button(
             onClick = {
-                onMarkupChange("")
+                holder.text = ""
+                editTextRef.value?.setText("")
                 onStatusChange("")
                 container?.removeAllViews()
                 onContainerChange(null)
