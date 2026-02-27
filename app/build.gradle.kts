@@ -43,6 +43,27 @@ android {
     }
 }
 
+val apkDir = project.rootProject.layout.projectDirectory.dir("apk")
+
+tasks.register<Copy>("copyReleaseApk") {
+    from(layout.buildDirectory.dir("outputs/apk/release"))
+    into(apkDir)
+    include("*.apk")
+    rename { "AndroidDemoAdMarkup.apk" }
+}
+
+tasks.register<Copy>("copyDebugApk") {
+    from(layout.buildDirectory.dir("outputs/apk/debug"))
+    into(apkDir)
+    include("*.apk")
+    rename { "AndroidDemoAdMarkupDebug.apk" }
+}
+
+afterEvaluate {
+    tasks.named("assembleRelease") { finalizedBy("copyReleaseApk") }
+    tasks.named("assembleDebug") { finalizedBy("copyDebugApk") }
+}
+
 configurations.all {
     exclude(group = "com.bidease", module = "bidease-mobile-test-mode")
 }
