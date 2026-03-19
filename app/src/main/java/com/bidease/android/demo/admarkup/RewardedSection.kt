@@ -44,15 +44,15 @@ fun RewardedSection(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Button(
-            onClick = {
-                holder.text = testMarkup
-                editTextRef.value?.setText(testMarkup)
-            },
-            modifier = Modifier.weight(1f)
-        ) {
-            Text(stringResource(R.string.test_rewarded))
-        }
+//        Button(
+//            onClick = {
+//                holder.text = testMarkup
+//                editTextRef.value?.setText(testMarkup)
+//            },
+//            modifier = Modifier.weight(1f)
+//        ) {
+//            Text(stringResource(R.string.test_rewarded))
+//        }
         BrowseAdFileButton(
             onMarkupLoaded = { text ->
                 holder.text = text

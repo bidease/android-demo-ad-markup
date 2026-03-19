@@ -11,6 +11,6 @@
     <string name="show_rewarded">Show Rewarded</string>
     <string name="show_mraid">Show MRAID</string>
     <string name="clear">Clear</string>
-    <string name="browse_ad_file">Browse Ad File</string>
+    <string name="browse_ad_file">Upload Creative</string>
     <string name="browse_ad_file_error">Could not read the file (too large or invalid).</string>
 </resources>
