@@ -38,15 +38,27 @@ fun InterstitialSection(
         label = "Interstitial Markup",
         minLines = 3
     )
-    
-    Button(
-        onClick = {
-            holder.text = testMarkup
-            editTextRef.value?.setText(testMarkup)
-        },
-        modifier = Modifier.fillMaxWidth()
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(stringResource(R.string.test_interstitial))
+        Button(
+            onClick = {
+                holder.text = testMarkup
+                editTextRef.value?.setText(testMarkup)
+            },
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(stringResource(R.string.test_interstitial))
+        }
+        BrowseAdFileButton(
+            onMarkupLoaded = { text ->
+                holder.text = text
+                editTextRef.value?.setText(text)
+            },
+            modifier = Modifier.weight(1f)
+        )
     }
     
     Row(
