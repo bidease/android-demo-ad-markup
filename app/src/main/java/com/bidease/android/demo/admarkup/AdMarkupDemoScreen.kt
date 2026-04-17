@@ -59,7 +59,7 @@ fun AdMarkupDemoScreen() {
         Spacer(modifier = Modifier.height(20.dp))
 
         Text(
-            text = "Paste your ad markup (HTML, VAST, or MRAID) and click Show",
+            text = "Paste your ad markup (HTML or MRAID) and click Show",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
