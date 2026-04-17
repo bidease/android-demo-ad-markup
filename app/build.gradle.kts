@@ -81,7 +81,6 @@ dependencies {
     implementation(libs.bidease.mobile)
     implementation(libs.admob.adapter)
     implementation(libs.applovin.adapter)
-    implementation(libs.levelplay.adapter)
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

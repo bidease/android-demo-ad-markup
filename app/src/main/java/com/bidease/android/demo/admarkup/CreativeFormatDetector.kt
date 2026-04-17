@@ -26,23 +26,10 @@ object CreativeFormatDetector {
         val format = detectFormat(markup)
         
         return when (format) {
-            Format.VAST -> validateVAST(markup)
+            Format.VAST -> ValidationResult(false, "Unsupported format: VAST. Supported formats: HTML and MRAID")
             Format.HTML -> validateHTML(markup)
             Format.MRAID -> validateMRAID(markup)
-            Format.UNKNOWN -> ValidationResult(false, "Unknown format. Supported formats: HTML, VAST, MRAID")
-        }
-    }
-
-    private fun validateVAST(markup: String): ValidationResult {
-        val trimmed = markup.trim()
-        
-        return when {
-            trimmed.isEmpty() -> ValidationResult(false, "VAST markup is empty")
-            !trimmed.contains("<VAST", ignoreCase = true) && !trimmed.contains("<?xml") -> 
-                ValidationResult(false, "Invalid VAST: missing VAST root element")
-            !trimmed.contains("<Ad>", ignoreCase = true) && !trimmed.contains("<Ad ", ignoreCase = true) -> 
-                ValidationResult(false, "Invalid VAST: missing Ad element")
-            else -> ValidationResult(true, "Valid VAST")
+            Format.UNKNOWN -> ValidationResult(false, "Unknown format. Supported formats: HTML and MRAID")
         }
     }
 
