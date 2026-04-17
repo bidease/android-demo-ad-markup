@@ -2,28 +2,16 @@ package com.bidease.android.demo.admarkup
 
 import android.content.Context
 import android.view.ViewGroup
-import com.bidease.mobile.LoadParams
 import com.bidease.mobile.ads.AdSize
 import com.bidease.mobile.ads.mraid.MraidEnv
-import com.bidease.mobile.ads.scene.Element
+import com.bidease.mobile.ads.scene.ButtonAction
+import com.bidease.mobile.ads.scene.ButtonProps
+import com.bidease.mobile.ads.scene.ElementType
 import com.bidease.mobile.ads.scene.SceneType
 import com.bidease.mobile.ads.scene.WebViewScene
-import com.bidease.mobile.bannerads.BannerLoadFailure
-import com.bidease.mobile.bannerads.BannerLoadSuccess
-import com.bidease.mobile.bannerads.BannerView
 import com.bidease.mobile.interstitialads.AdDialog
 import com.bidease.mobile.interstitialads.AndroidAdDialog
-import com.bidease.mobile.interstitialads.InterstitialAd
-import com.bidease.mobile.interstitialads.InterstitialAdBase
-import com.bidease.mobile.interstitialads.InterstitialLoadFailure
-import com.bidease.mobile.interstitialads.InterstitialLoadSuccess
 import com.bidease.mobile.js.modules.DefaultWebViewChannel
-import com.bidease.mobile.rewardedads.RewardedAd
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
-import javax.xml.transform.Templates
 import kotlin.collections.emptyList
 
 suspend fun renderBanner(
@@ -122,7 +110,7 @@ suspend fun renderInterstitial(
             baseUrl = "",
             html = markup,
             timeoutMsec = 5000,
-            template = emptyList(),
+            template = listOf(ButtonProps(type= ElementType.BUTTON, action = ButtonAction.CLOSE)),
             skadn = null,
             aak = null,
             mraidEnv = MraidEnv(
@@ -135,17 +123,17 @@ suspend fun renderInterstitial(
     )
 
     val events = AdDialog.Events(
-        onClick = { sceneIndex, buttonIndex ->
+        onClick = { _, _ ->
             logger?.logEvent(AdLifecycleEvent.CLICK, "Interstitial ad clicked (button)")
             onClicked()
         },
 
-        onWebViewClick = { sceneIndex, url ->
-            logger?.logEvent(AdLifecycleEvent.CLICK, "Interstitial ad clicked (WebView)")
+        onWebViewClick = { _, _ ->
+            logger?.logEvent(AdLifecycleEvent.CLICK, "Interstitial ad clicked")
             onClicked()
         },
 
-        onError = { sceneIndex, error ->
+        onError = { _, error ->
             val message = error?.ifBlank { "Unknown error" } ?: "Unknown error"
             logger?.logEvent(AdLifecycleEvent.FAIL, message)
             onFailed(message)
@@ -203,7 +191,7 @@ suspend fun renderRewarded(
             baseUrl = "",
             html = markup,
             timeoutMsec = 5000,
-            template = emptyList(),
+            template = listOf(ButtonProps(type= ElementType.BUTTON, action = ButtonAction.CLOSE)),
             skadn = null,
             aak = null,
             mraidEnv = MraidEnv(
@@ -216,17 +204,17 @@ suspend fun renderRewarded(
     )
 
     val events = AdDialog.Events(
-        onClick = { sceneIndex, buttonIndex ->
+        onClick = { _, _ ->
             logger?.logEvent(AdLifecycleEvent.CLICK, "Interstitial ad clicked (button)")
             onClicked()
         },
 
-        onWebViewClick = { sceneIndex, url ->
+        onWebViewClick = { _, _ ->
             logger?.logEvent(AdLifecycleEvent.CLICK, "Interstitial ad clicked (WebView)")
             onClicked()
         },
 
-        onError = { sceneIndex, error ->
+        onError = { _, error ->
             val message = error?.ifBlank { "Unknown error" } ?: "Unknown error"
             logger?.logEvent(AdLifecycleEvent.FAIL, message)
             onFailed(message)
