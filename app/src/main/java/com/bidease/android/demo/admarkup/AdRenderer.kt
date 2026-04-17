@@ -1,18 +1,30 @@
 package com.bidease.android.demo.admarkup
 
 import android.content.Context
-import android.util.Log
 import android.view.ViewGroup
-import com.bidease.bidservice.openrtb.response.Bid
-import com.bidease.bidservice.openrtb.response.BidResponse
-import com.bidease.bidservice.openrtb.response.SeatBid
-import com.bidease.mobile.BideaseMobile
-import com.bidease.mobile.interstitialads.InterstitialController
-import com.bidease.mobile.legacy.AdSize
-import com.bidease.mobile.legacy.configuration.AdUnitConfiguration
-import com.bidease.mobile.legacy.converters.toLegacy
-import com.bidease.mobile.legacy.rendering.views.interstitial.InterstitialManager
-import com.bidease.mobile.views.AdViewManager
+import com.bidease.mobile.LoadParams
+import com.bidease.mobile.ads.AdSize
+import com.bidease.mobile.ads.mraid.MraidEnv
+import com.bidease.mobile.ads.scene.Element
+import com.bidease.mobile.ads.scene.SceneType
+import com.bidease.mobile.ads.scene.WebViewScene
+import com.bidease.mobile.bannerads.BannerLoadFailure
+import com.bidease.mobile.bannerads.BannerLoadSuccess
+import com.bidease.mobile.bannerads.BannerView
+import com.bidease.mobile.interstitialads.AdDialog
+import com.bidease.mobile.interstitialads.AndroidAdDialog
+import com.bidease.mobile.interstitialads.InterstitialAd
+import com.bidease.mobile.interstitialads.InterstitialAdBase
+import com.bidease.mobile.interstitialads.InterstitialLoadFailure
+import com.bidease.mobile.interstitialads.InterstitialLoadSuccess
+import com.bidease.mobile.js.modules.DefaultWebViewChannel
+import com.bidease.mobile.rewardedads.RewardedAd
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import javax.xml.transform.Templates
+import kotlin.collections.emptyList
 
 suspend fun renderBanner(
     context: Context,
@@ -33,55 +45,56 @@ suspend fun renderBanner(
     }
 
     logger?.logEvent(AdLifecycleEvent.LOAD, "Banner ad")
-    BideaseMobile.awaitInit()
     
-    val bid = Bid(
-        id = "banner_${System.currentTimeMillis()}",
-        adm = markup,
-        width = 320,
-        height = 50
-    )
-
-    val bidResponse = BidResponse(
-        id = "response_${System.currentTimeMillis()}",
-        seatBids = listOf(SeatBid(seat = "seat", bids = listOf(bid)))
-    )
-
-    val config = AdUnitConfiguration.createBannerAdUnitConfiguration().apply {
-        addSize(AdSize(320, 50))
+    val banner = AdmBannerView(context)
+    banner.onLoaded = {
+        logger?.logEvent(AdLifecycleEvent.RENDER, "Banner ad loaded")
     }
-    
-    val legacyResponse = bidResponse.toLegacy(config)
-
-    val adViewManager = AdViewManager(context, parentView, InterstitialManager()).apply {
-        onAdLoaded = { _ ->
-            logger?.logEvent(AdLifecycleEvent.RENDER, "Banner ad loaded")
-        }
-        onViewReadyForImmediateDisplay = { creative ->
-            logger?.logEvent(AdLifecycleEvent.RENDER, "Banner creative ready")
-            parentView.removeAllViews()
-            parentView.addView(creative, ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ))
-            logger?.logEvent(AdLifecycleEvent.SHOW, "Banner ad displayed")
-            onDisplayed()
-        }
-        onFailedToLoad = { error ->
-            logger?.logEvent(AdLifecycleEvent.FAIL, error.toString())
-            onFailed(error.toString())
-        }
-        onCreativeClicked = { _ ->
-            logger?.logEvent(AdLifecycleEvent.CLICK, "Banner ad clicked")
-            onClicked()
-        }
-        onCreativeInterstitialClosed = {
-            logger?.logEvent(AdLifecycleEvent.CLOSE, "Banner ad closed")
-            onClosed()
-        }
+    banner.onFailed = { error: String ->
+        val message = error.ifBlank { "Unknown error" }
+        logger?.logEvent(AdLifecycleEvent.FAIL, message)
+        onFailed(message)
+    }
+    banner.onDisplayed = {
+        logger?.logEvent(AdLifecycleEvent.SHOW, "Banner ad displayed")
+        onDisplayed()
+    }
+    banner.onClicked = {
+        logger?.logEvent(AdLifecycleEvent.CLICK, "Banner ad clicked")
+        onClicked()
+    }
+    banner.onClosed = {
+        logger?.logEvent(AdLifecycleEvent.CLOSE, "Banner ad closed")
+        onClosed()
     }
 
-    adViewManager.loadBidTransaction(config, legacyResponse)
+    val scenes = listOf(
+        WebViewScene(
+            type = SceneType.WEB_VIEW,
+            baseUrl = "",
+            html = markup,
+            timeoutMsec = 5000,
+            template = emptyList(),
+            skadn = null,
+            aak = null,
+            mraidEnv = MraidEnv(
+                appId = "",
+                ifa = "",
+                limitAdTracking = false,
+                coppa = false
+            ),
+        )
+    )
+
+    banner.show(AdSize(320, 50), scenes)
+    parentView.removeAllViews()
+    parentView.addView(
+        banner,
+        ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+    )
 }
 
 suspend fun renderInterstitial(
@@ -92,7 +105,7 @@ suspend fun renderInterstitial(
     onClicked: () -> Unit = {},
     onClosed: () -> Unit = {},
     logger: AdLifecycleLogger? = null
-): InterstitialController {
+): AndroidAdDialog {
     val validation = CreativeFormatDetector.validateMarkup(markup)
     if (!validation.isValid) {
         val errorMessage = "Invalid markup: ${validation.message}"
@@ -102,55 +115,66 @@ suspend fun renderInterstitial(
     }
 
     logger?.logEvent(AdLifecycleEvent.LOAD, "Interstitial ad")
-    BideaseMobile.awaitInit()
-    
-    val bid = Bid(
-        id = "interstitial_${System.currentTimeMillis()}",
-        adm = markup,
-        width = 320,
-        height = 480
+
+    val scenes = listOf(
+        WebViewScene(
+            type = SceneType.WEB_VIEW,
+            baseUrl = "",
+            html = markup,
+            timeoutMsec = 5000,
+            template = emptyList(),
+            skadn = null,
+            aak = null,
+            mraidEnv = MraidEnv(
+                appId = "",
+                ifa = "",
+                limitAdTracking = false,
+                coppa = false
+            ),
+        )
     )
 
-    val bidResponse = BidResponse(
-        id = "response_${System.currentTimeMillis()}",
-        seatBids = listOf(SeatBid(seat = "seat", bids = listOf(bid)))
-    )
-
-    val config = AdUnitConfiguration.createInterstitialAdUnitConfiguration().apply {
-        addSize(AdSize(320, 480))
-    }
-    
-    val legacyResponse = bidResponse.toLegacy(config)
-
-    var clickHandlerSet = false
-    val controller = InterstitialController(context).apply {
-        onInterstitialReadyForDisplay = {
-            logger?.logEvent(AdLifecycleEvent.RENDER, "Interstitial ad ready")
-            show()
-        }
-        onInterstitialDisplayed = {
-            logger?.logEvent(AdLifecycleEvent.SHOW, "Interstitial ad displayed")
-            onDisplayed()
-        }
-        onInterstitialFailedToLoad = { error ->
-            logger?.logEvent(AdLifecycleEvent.FAIL, error ?: "Unknown error")
-            onFailed(error ?: "Unknown error")
-        }
-        onInterstitialClicked = {
-            logger?.logEvent(AdLifecycleEvent.CLICK, "Interstitial ad clicked")
-            clickHandlerSet = true
+    val events = AdDialog.Events(
+        onClick = { sceneIndex, buttonIndex ->
+            logger?.logEvent(AdLifecycleEvent.CLICK, "Interstitial ad clicked (button)")
             onClicked()
+        },
+
+        onWebViewClick = { sceneIndex, url ->
+            logger?.logEvent(AdLifecycleEvent.CLICK, "Interstitial ad clicked (WebView)")
+            onClicked()
+        },
+
+        onError = { sceneIndex, error ->
+            val message = error?.ifBlank { "Unknown error" } ?: "Unknown error"
+            logger?.logEvent(AdLifecycleEvent.FAIL, message)
+            onFailed(message)
         }
-        onInterstitialClosed = {
+    )
+
+    val showEvents = AdDialog.ShowEvents(
+        onDialogClose = {
             logger?.logEvent(AdLifecycleEvent.CLOSE, "Interstitial ad closed")
             onClosed()
-        }
-    }
-    
-    android.util.Log.d("AdRenderer", "Interstitial click handler set: $clickHandlerSet")
+        },
 
-    controller.loadAd(config, legacyResponse)
-    return controller
+        onDisplayed = {
+            logger?.logEvent(AdLifecycleEvent.SHOW, "Interstitial ad displayed")
+            onDisplayed()
+        },
+
+        onError = { error ->
+            val message = error.ifBlank { "Unknown error" }
+            logger?.logEvent(AdLifecycleEvent.FAIL, message)
+            onFailed(message)
+        }
+    )
+
+    val adDialog = AndroidAdDialog(context, DefaultWebViewChannel())
+    adDialog.load(AdDialog.LoadProps(scenes), events)
+    adDialog.show(AdDialog.ShowProps(preventSystemClose = false), showEvents)
+
+    return adDialog
 }
 
 suspend fun renderRewarded(
@@ -162,7 +186,7 @@ suspend fun renderRewarded(
     onClosed: () -> Unit = {},
     onRewarded: () -> Unit = {},
     logger: AdLifecycleLogger? = null
-): InterstitialController {
+): AndroidAdDialog {
     val validation = CreativeFormatDetector.validateMarkup(markup)
     if (!validation.isValid) {
         val errorMessage = "Invalid markup: ${validation.message}"
@@ -172,50 +196,65 @@ suspend fun renderRewarded(
     }
 
     logger?.logEvent(AdLifecycleEvent.LOAD, "Rewarded ad")
-    BideaseMobile.awaitInit()
-    
-    val bid = Bid(
-        id = "rewarded_${System.currentTimeMillis()}",
-        adm = markup,
-        width = 320,
-        height = 480
+
+    val scenes = listOf(
+        WebViewScene(
+            type = SceneType.WEB_VIEW,
+            baseUrl = "",
+            html = markup,
+            timeoutMsec = 5000,
+            template = emptyList(),
+            skadn = null,
+            aak = null,
+            mraidEnv = MraidEnv(
+                appId = "",
+                ifa = "",
+                limitAdTracking = false,
+                coppa = false
+            ),
+        )
     )
 
-    val bidResponse = BidResponse(
-        id = "response_${System.currentTimeMillis()}",
-        seatBids = listOf(SeatBid(seat = "seat", bids = listOf(bid)))
-    )
-
-    val config = AdUnitConfiguration.createRewardedAdUnitConfiguration().apply {
-        addSize(AdSize(320, 480))
-    }
-    
-    val legacyResponse = bidResponse.toLegacy(config)
-
-    val controller = InterstitialController(context).apply {
-        onInterstitialReadyForDisplay = {
-            logger?.logEvent(AdLifecycleEvent.RENDER, "Rewarded ad ready")
-            show()
-        }
-        onInterstitialDisplayed = {
-            logger?.logEvent(AdLifecycleEvent.SHOW, "Rewarded ad displayed")
-            onDisplayed()
-        }
-        onInterstitialFailedToLoad = { error ->
-            logger?.logEvent(AdLifecycleEvent.FAIL, error ?: "Unknown error")
-            onFailed(error ?: "Unknown error")
-        }
-        onInterstitialClicked = {
-            logger?.logEvent(AdLifecycleEvent.CLICK, "Rewarded ad clicked")
+    val events = AdDialog.Events(
+        onClick = { sceneIndex, buttonIndex ->
+            logger?.logEvent(AdLifecycleEvent.CLICK, "Interstitial ad clicked (button)")
             onClicked()
-        }
-        onInterstitialClosed = {
-            logger?.logEvent(AdLifecycleEvent.CLOSE, "Rewarded ad closed")
-            onClosed()
-            onRewarded()
-        }
-    }
+        },
 
-    controller.loadAd(config, legacyResponse)
-    return controller
+        onWebViewClick = { sceneIndex, url ->
+            logger?.logEvent(AdLifecycleEvent.CLICK, "Interstitial ad clicked (WebView)")
+            onClicked()
+        },
+
+        onError = { sceneIndex, error ->
+            val message = error?.ifBlank { "Unknown error" } ?: "Unknown error"
+            logger?.logEvent(AdLifecycleEvent.FAIL, message)
+            onFailed(message)
+        }
+    )
+
+    val showEvents = AdDialog.ShowEvents(
+        onDialogClose = {
+            logger?.logEvent(AdLifecycleEvent.CLOSE, "Interstitial ad closed")
+            onRewarded()
+            onClosed()
+        },
+
+        onDisplayed = {
+            logger?.logEvent(AdLifecycleEvent.SHOW, "Interstitial ad displayed")
+            onDisplayed()
+        },
+
+        onError = { error ->
+            val message = error.ifBlank { "Unknown error" }
+            logger?.logEvent(AdLifecycleEvent.FAIL, message)
+            onFailed(message)
+        }
+    )
+
+    val adDialog = AndroidAdDialog(context, DefaultWebViewChannel())
+    adDialog.load(AdDialog.LoadProps(scenes), events)
+    adDialog.show(AdDialog.ShowProps(preventSystemClose = false), showEvents)
+
+    return adDialog
 }

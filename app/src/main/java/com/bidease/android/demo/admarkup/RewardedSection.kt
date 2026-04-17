@@ -1,6 +1,5 @@
 package com.bidease.android.demo.admarkup
 
-import android.content.Context
 import android.widget.EditText
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -9,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.bidease.mobile.interstitialads.InterstitialController
+import com.bidease.mobile.interstitialads.AndroidAdDialog
 import kotlinx.coroutines.launch
 
 @Composable
@@ -17,8 +16,8 @@ fun RewardedSection(
     holder: MarkupHolder,
     status: String,
     onStatusChange: (String) -> Unit,
-    controller: InterstitialController?,
-    onControllerChange: (InterstitialController?) -> Unit,
+    controller: AndroidAdDialog?,
+    onControllerChange: (AndroidAdDialog?) -> Unit,
     testMarkup: String
 ) {
     val context = LocalContext.current
@@ -98,7 +97,7 @@ fun RewardedSection(
                 holder.text = ""
                 editTextRef.value?.setText("")
                 onStatusChange("")
-                controller?.destroy()
+                //controller?.destroy()
                 onControllerChange(null)
                 logger.clear()
             },

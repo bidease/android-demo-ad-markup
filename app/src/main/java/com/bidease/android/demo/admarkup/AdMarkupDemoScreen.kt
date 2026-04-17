@@ -9,7 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.bidease.mobile.interstitialads.InterstitialController
+import com.bidease.mobile.interstitialads.AndroidAdDialog
 
 @Composable
 fun AdMarkupDemoScreen() {
@@ -39,8 +39,8 @@ fun AdMarkupDemoScreen() {
     
     var bannerContainer by remember { mutableStateOf<FrameLayout?>(null) }
     var mraidContainer by remember { mutableStateOf<FrameLayout?>(null) }
-    var interstitialController by remember { mutableStateOf<InterstitialController?>(null) }
-    var rewardedController by remember { mutableStateOf<InterstitialController?>(null) }
+    var interstitialController by remember { mutableStateOf<AndroidAdDialog?>(null) }
+    var rewardedController by remember { mutableStateOf<AndroidAdDialog?>(null) }
     
     Column(
         modifier = Modifier

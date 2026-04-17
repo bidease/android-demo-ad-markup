@@ -10,7 +10,9 @@ import androidx.compose.ui.Modifier
 import com.bidease.android.demo.admarkup.ui.theme.AndroidDemoAdMarkupTheme
 import com.bidease.mobile.BideaseMobile
 import com.bidease.mobile.InitFailure
+import com.bidease.mobile.InitParams
 import com.bidease.mobile.InitSuccess
+import com.bidease.mobile.SdkPlugin
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 
@@ -19,7 +21,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         
         lifecycleScope.launch {
-            when (val result = BideaseMobile.init(applicationContext)) {
+            val initParams = InitParams(
+                key = "",
+                sdkPlugin = SdkPlugin.ANDROID
+            )
+            when (val result = BideaseMobile.init(applicationContext, initParams)) {
                 is InitSuccess -> {
                     println("SDK initialized successfully")
                 }
