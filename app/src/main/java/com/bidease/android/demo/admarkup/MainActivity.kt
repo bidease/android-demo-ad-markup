@@ -21,16 +21,20 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         
         lifecycleScope.launch {
+            BideaseMobile.setSdkPlugin(SdkPlugin.ANDROID)
+
             val initParams = InitParams(
-                key = "",
-                sdkPlugin = SdkPlugin.ANDROID
+                key = ""
             )
-            when (val result = BideaseMobile.init(applicationContext, initParams)) {
-                is InitSuccess -> {
-                    println("SDK initialized successfully")
-                }
-                is InitFailure -> {
-                    println("SDK initialization failed: ${result.error}")
+
+            BideaseMobile.initialize(applicationContext, initParams) { result ->
+                when (result) {
+                    is InitSuccess -> {
+                        println("SDK initialized successfully")
+                    }
+                    is InitFailure -> {
+                        println("SDK initialization failed: ${result.error}")
+                    }
                 }
             }
         }

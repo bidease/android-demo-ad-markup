@@ -1,5 +1,43 @@
-<div style="width:320px;height:480px;background:linear-gradient(45deg, #ff6b6b, #4ecdc4);color:white;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;font-family:Arial,sans-serif;">
-    <h2>TEST INTERSTITIAL</h2>
-    <p>Full screen ad</p>
-    <button style="background:white;color:#333;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;">CLICK ME</button>
+<!DOCTYPE html>
+<html>
+<head>
+<meta name='viewport' content='width=device-width,initial-scale=1,maximum-scale=1'>
+<script src="mraid.js"></script>
+<style>
+body{margin:0;padding:0;background:#000}
+.bidease-slider{
+    position:absolute;top:0;left:0;width:100%;height:100%;
+    display:flex;align-items:center;justify-content:center;
+}
+.bidease-slider img{
+    width:100%;height:auto;max-height:100%;
+}
+</style>
+</head>
+<body>
+
+<div class="bidease-slider" id="ad">
+<img src="https://creative-bunny.bidease.com/media/res/2026/04/b5d8afa7-865d.jpeg?campaign_id=137938&creative_id=1290446&x=JDzeY2AnEHUDGz7NI7ZQ"/>
 </div>
+
+<script>
+(function() {
+    var target = "https://go.yandex/en_kz/";
+
+    function openLink() {
+        if (typeof mraid !== "undefined") {
+        try { mraid.open(target); return; } catch(e){}
+    }
+        window.open(target, "_blank");
+    }
+
+    document.getElementById("ad").addEventListener("click", openLink);
+
+    if (typeof mraid !== "undefined" && mraid.getState() === "loading") {
+        mraid.addEventListener("ready", function(){});
+    }
+})();
+</script>
+
+</body>
+</html>

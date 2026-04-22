@@ -12,6 +12,7 @@ import com.bidease.mobile.ads.scene.WebViewScene
 import com.bidease.mobile.interstitialads.AdDialog
 import com.bidease.mobile.interstitialads.AndroidAdDialog
 import com.bidease.mobile.js.modules.DefaultWebViewChannel
+import com.bidease.mobile.ktx.openExternalLink
 import kotlin.collections.emptyList
 
 suspend fun renderBanner(
@@ -128,7 +129,11 @@ suspend fun renderInterstitial(
             onClicked()
         },
 
-        onWebViewClick = { _, _ ->
+        onWebViewClick = { _, url ->
+            if (url != null) {
+                context.openExternalLink(url)
+            }
+
             logger?.logEvent(AdLifecycleEvent.CLICK, "Interstitial ad clicked")
             onClicked()
         },
@@ -209,7 +214,11 @@ suspend fun renderRewarded(
             onClicked()
         },
 
-        onWebViewClick = { _, _ ->
+        onWebViewClick = { _, url ->
+            if (url != null) {
+                context.openExternalLink(url)
+            }
+
             logger?.logEvent(AdLifecycleEvent.CLICK, "Interstitial ad clicked (WebView)")
             onClicked()
         },
