@@ -20,25 +20,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        lifecycleScope.launch {
-            BideaseMobile.setSdkPlugin(SdkPlugin.ANDROID)
-
-            val initParams = InitParams(
-                key = ""
-            )
-
-            BideaseMobile.initialize(applicationContext, initParams) { result ->
-                when (result) {
-                    is InitSuccess -> {
-                        println("SDK initialized successfully")
-                    }
-                    is InitFailure -> {
-                        println("SDK initialization failed: ${result.error}")
-                    }
-                }
-            }
-        }
-        
         setContent {
             AndroidDemoAdMarkupTheme {
                 Surface(
@@ -49,10 +30,5 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
-    
-    override fun onDestroy() {
-        super.onDestroy()
-        BideaseMobile.onDestroy()
     }
 }
