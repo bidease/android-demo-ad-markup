@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.bidease.mobile.interstitialads.InterstitialController
+import com.bidease.mobile.interstitialads.AndroidAdDialog
 import kotlinx.coroutines.launch
 
 @Composable
@@ -16,8 +16,8 @@ fun InterstitialSection(
     holder: MarkupHolder,
     status: String,
     onStatusChange: (String) -> Unit,
-    controller: InterstitialController?,
-    onControllerChange: (InterstitialController?) -> Unit,
+    controller: AndroidAdDialog?,
+    onControllerChange: (AndroidAdDialog?) -> Unit,
     testMarkup: String
 ) {
     val context = LocalContext.current
@@ -96,7 +96,7 @@ fun InterstitialSection(
                 holder.text = ""
                 editTextRef.value?.setText("")
                 onStatusChange("")
-                controller?.destroy()
+                //controller?.destroy()
                 onControllerChange(null)
                 logger.clear()
             },

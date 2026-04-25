@@ -10,24 +10,15 @@ import androidx.compose.ui.Modifier
 import com.bidease.android.demo.admarkup.ui.theme.AndroidDemoAdMarkupTheme
 import com.bidease.mobile.BideaseMobile
 import com.bidease.mobile.InitFailure
+import com.bidease.mobile.InitParams
 import com.bidease.mobile.InitSuccess
+import com.bidease.mobile.SdkPlugin
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        lifecycleScope.launch {
-            when (val result = BideaseMobile.init(applicationContext)) {
-                is InitSuccess -> {
-                    println("SDK initialized successfully")
-                }
-                is InitFailure -> {
-                    println("SDK initialization failed: ${result.error}")
-                }
-            }
-        }
         
         setContent {
             AndroidDemoAdMarkupTheme {
@@ -39,10 +30,5 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
-    
-    override fun onDestroy() {
-        super.onDestroy()
-        BideaseMobile.onDestroy()
     }
 }
